@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
@@ -32,8 +33,8 @@ public class GraphicalInterface {
 		mainWin.add(messageBox);
 		
 		DefaultListModel<String> channels = new DefaultListModel<>();
-		channels.addElement("Default Channel");
-		channels.addElement("Alternate Channel");
+		channels.addElement("Default");
+		channels.addElement("Alternate");
 		JList<String> channelList = new JList<String>(channels);
 		channelList.setSelectedIndex(0);
 		mainWin.add(channelList, BorderLayout.WEST);
@@ -44,5 +45,9 @@ public class GraphicalInterface {
 		JList<String> usersList = new JList<>(users);
 		mainWin.add(usersList, BorderLayout.EAST);
 		mainWin.setVisible(true);
+	}
+	
+	private void switchChannel(String channel) {
+		
 	}
 }
