@@ -1,3 +1,4 @@
+import types.Message;
 
 public class Messenger implements Runnable {
 	
@@ -7,7 +8,7 @@ public class Messenger implements Runnable {
 		this.gui = gui;
 	}
 	
-	public void sendMessage(String username, String channel, String message) {
+	public void sendMessage(Message msg) {
 		
 	}
 
