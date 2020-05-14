@@ -1,9 +1,12 @@
 package types;
 
+import java.net.InetAddress;
+
 public class Ping {
 	String username;
 	int lastMessageID;
-	public Ping(String u, int lmi) {
-		username = u; lastMessageID = lmi;
+	InetAddress returnAddr;
+	public Ping(String u, int lmi, InetAddress rtr) {
+		username = u; lastMessageID = lmi; returnAddr = rtr;
 	}
 }
