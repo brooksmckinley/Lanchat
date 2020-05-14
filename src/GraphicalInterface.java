@@ -44,13 +44,12 @@ public class GraphicalInterface {
 		mainWin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Message area and "write a message" box
-		addChannel("default");
-		switchChannel(0);
+		switchChannel(addChannel("default"));
 		messageBox.add(messageScroller);
 		textBox.addActionListener((l) -> {
 			System.out.println("Event: " + l.getActionCommand());
 			String msg = String.format("<%s> %s", config.username, l.getActionCommand());
-			messenger.sendMessage("default", l.getActionCommand());
+			messenger.sendMessage(channelNames.get(currentChannelID), l.getActionCommand());
 			SwingUtilities.invokeLater(() -> {
 				currentChannelBuffer.setText(currentChannelBuffer.getText() + msg + "\n");
 				textBox.setText("");
@@ -65,6 +64,12 @@ public class GraphicalInterface {
 		});
 		channelList.setSelectedIndex(currentChannelID);
 		channelPanel.add(new JScrollPane(channelList));
+		newChannelButton.addActionListener((l) -> {
+			new NewChannelDialog(this.mainWin, (event) -> {
+				if (!channelIDs.containsKey(event.getActionCommand()))
+					switchChannel(addChannel(event.getActionCommand()));
+			});
+		}); 
 		channelPanel.add(newChannelButton, BorderLayout.SOUTH);
 		mainWin.add(channelPanel, BorderLayout.WEST);
 		

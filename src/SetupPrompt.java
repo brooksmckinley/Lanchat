@@ -31,10 +31,12 @@ public class SetupPrompt {
 		JTextField portField = new JTextField("2345");
 		JLabel interfaceLabel = new JLabel("Network Interface: ");
 		JComboBox<String> interfaceMenu = new JComboBox<>();
+		int interfaces = 0;
 		for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
 			NetworkInterface card = e.nextElement();
-			if (card.supportsMulticast() && card.isUp() && card.isLoopback()) {
+			if (card.supportsMulticast() && card.isUp() && !card.isLoopback()) {
 				interfaceMenu.addItem(card.getName());
+				interfaces++;
 			}
 		}
 		JButton startButton = new JButton("Start");
@@ -91,7 +93,7 @@ public class SetupPrompt {
 		settingsPrompt.setVisible(true);
 		
 		System.out.println(interfaceMenu.getComponentCount());
-		if (interfaceMenu.getComponentCount() == 0)
+		if (interfaces == 0)
 			new ErrorDialog(settingsPrompt, "No network interfaces available", "No network interfaces available. Please ensure your intended network device is up and connected.");
 
 
