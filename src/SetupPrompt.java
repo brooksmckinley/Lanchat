@@ -33,7 +33,7 @@ public class SetupPrompt {
 		JComboBox<String> interfaceMenu = new JComboBox<>();
 		for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
 			NetworkInterface card = e.nextElement();
-			if (card.supportsMulticast() && card.isUp()) {
+			if (card.supportsMulticast() && card.isUp() && card.isLoopback()) {
 				interfaceMenu.addItem(card.getName());
 			}
 		}
@@ -89,6 +89,11 @@ public class SetupPrompt {
 		settingsPrompt.setSize(size);
 		settingsPrompt.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		settingsPrompt.setVisible(true);
+		
+		System.out.println(interfaceMenu.getComponentCount());
+		if (interfaceMenu.getComponentCount() == 0)
+			new ErrorDialog(settingsPrompt, "No network interfaces available", "No network interfaces available. Please ensure your intended network device is up and connected.");
+
 
 	}
 
