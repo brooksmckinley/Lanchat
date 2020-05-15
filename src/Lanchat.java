@@ -4,6 +4,8 @@ import java.net.SocketException;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import gui.GraphicalInterface;
+import gui.SetupPrompt;
 import messenger.Messenger;
 import types.Settings;
 

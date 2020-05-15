@@ -1,3 +1,4 @@
+package gui;
 import java.awt.Dimension;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
