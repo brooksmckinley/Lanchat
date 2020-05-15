@@ -1,3 +1,4 @@
+package messenger;
 
 public class Pinger implements Runnable {
 	Messenger msg;

@@ -14,6 +14,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
+import messenger.Messenger;
 import types.Message;
 import types.Settings;
 
@@ -68,6 +69,7 @@ public class GraphicalInterface {
 			new NewChannelDialog(this.mainWin, (event) -> {
 				if (!channelIDs.containsKey(event.getActionCommand()))
 					switchChannel(addChannel(event.getActionCommand()));
+				channelList.setSelectedIndex(currentChannelID);
 			});
 		}); 
 		channelPanel.add(newChannelButton, BorderLayout.SOUTH);

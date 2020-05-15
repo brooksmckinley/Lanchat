@@ -4,6 +4,7 @@ import java.net.SocketException;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import messenger.Messenger;
 import types.Settings;
 
 public class Lanchat {

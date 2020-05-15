@@ -80,7 +80,7 @@ public class SetupPrompt {
 		// Interaction
 		startButton.addActionListener((action) -> {
 			submitSettings(usernameField.getText(), groupField.getText(), portField.getText(), (String) interfaceMenu.getSelectedItem());
-		}); 
+		});
 
 		// JFrame setup
 		settingsPrompt.getContentPane().setLayout(layout);
