@@ -1,4 +1,4 @@
-package types;
+package messenger.types;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 

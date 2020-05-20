@@ -16,8 +16,8 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
 import messenger.Messenger;
-import types.Message;
-import types.Settings;
+import messenger.types.Message;
+import messenger.types.Settings;
 
 public class GraphicalInterface {
 	private final Settings config;

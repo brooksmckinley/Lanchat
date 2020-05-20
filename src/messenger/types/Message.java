@@ -1,4 +1,4 @@
-package types;
+package messenger.types;
 public class Message {
 	public String user;
 	public String channel;

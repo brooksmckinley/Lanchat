@@ -2,14 +2,16 @@ package messenger;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import types.Message;
-import types.Settings;
-import types.User;
+import messenger.types.Message;
+import messenger.types.Ping;
+import messenger.types.Settings;
+import messenger.types.User;
 
 public class Messenger implements Runnable {
 
@@ -25,6 +27,7 @@ public class Messenger implements Runnable {
 	private Queue<User> leavingUsersToConsume;
 	
 	HashMap<String, User> clients;
+	HashMap<String, Long> lastPing;
 
 	public Messenger(Settings config) throws IOException {
 		this.config = config;
@@ -72,7 +75,9 @@ public class Messenger implements Runnable {
 				onMessage(packetMessage);
 			}
 			else if (packet.startsWith("ping|")) {
-				
+				Ping packetPing = Ping.parse(packet);
+				if (packetPing.username.equals(config.username)) return; // Don't process pings from yourself
+				onPing(packetPing);
 			}
 		} 
 		catch (Exception e) {
@@ -88,6 +93,17 @@ public class Messenger implements Runnable {
 			messagesToConsume.add(message);
 		setID(message.user, message.id);
 	}
+	
+	private void onPing(Ping ping) {
+		lastPing.put(ping.username, Calendar.getInstance().getTimeInMillis());
+		if (clients.containsKey(ping.username)) {
+			// Reliability stuff
+		}
+		else {
+			addUser(new User(ping.username, ping.lastMessageID));
+		}
+	}
+
 	
 	private void onNewUser(User user) {
 		if (this.newUserConsumer != null)
@@ -109,14 +125,18 @@ public class Messenger implements Runnable {
 			clients.get(user).lastID = id;
 		}
 		else {
-			clients.put(user, new User(user, id));
-			
+			addUser(new User(user, id));
 		}
+	}
+	
+	private void addUser(User user) {
+		clients.put(user.username, user);
+		onNewUser(user);
 	}
 
 	protected void ping() {
 		byte[] toSend = String.format("ping|%d|%s|%s", mID, config.username, 
-				config.networkCard.getInetAddresses().nextElement().toString()).getBytes();
+				config.networkCard.getInetAddresses().nextElement().getHostAddress()).getBytes();
 		DatagramPacket packet = new DatagramPacket(toSend, toSend.length, config.group, config.port);
 		try {
 			socket.send(packet);
@@ -143,7 +163,4 @@ public class Messenger implements Runnable {
 			}
 		}
 	}
-
-	
-
 }

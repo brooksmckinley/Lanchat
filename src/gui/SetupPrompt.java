@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import types.Settings;
+import messenger.types.Settings;
 
 public class SetupPrompt {
 
