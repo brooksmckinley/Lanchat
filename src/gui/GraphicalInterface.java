@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.ActionMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,11 +15,9 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
 import messenger.Messenger;
-import messenger.types.Message;
 import messenger.types.Settings;
 
 public class GraphicalInterface {
-	private final Settings config;
 	private ArrayList<String> channelNames = new ArrayList<>();
 	private HashMap<String, Integer> channelIDs = new HashMap<>();
 	private ArrayList<JTextPane> channelBuffers = new ArrayList<>();
@@ -41,7 +38,6 @@ public class GraphicalInterface {
 	private JScrollPane usersListScrollPane = new JScrollPane(usersList);
 	
 	public GraphicalInterface(Settings config, Messenger messenger) {
-		this.config = config;
 		mainWin.setTitle("Lanchat");
 		mainWin.setSize(800, 600);
 		mainWin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
