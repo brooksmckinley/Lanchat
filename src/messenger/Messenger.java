@@ -65,6 +65,14 @@ public class Messenger implements Runnable {
 		}
 		this.newUsersToConsume = null;
 	}
+	
+	public void addLeavingUserConsumer(Consumer<User> consumer) {
+		this.leavingUserConsumer = consumer;
+		for (User u : this.leavingUsersToConsume) {
+			consumer.accept(u);
+		}
+		this.leavingUsersToConsume = null;
+	}
 
 	// Private handlers
 	private void onPacket(String packet) {

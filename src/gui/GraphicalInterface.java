@@ -38,6 +38,7 @@ public class GraphicalInterface {
 	private JButton newChannelButton = new JButton("New Channel");
 	private DefaultListModel<String> users = new DefaultListModel<>();
 	private JList<String> usersList = new JList<>(users);
+	private JScrollPane usersListScrollPane = new JScrollPane(usersList);
 	
 	public GraphicalInterface(Settings config, Messenger messenger) {
 		this.config = config;
@@ -57,6 +58,7 @@ public class GraphicalInterface {
 				textBox.setText("");
 			});
 		});
+		textBox.setPreferredSize(new Dimension(textBox.getWidth(), newChannelButton.getPreferredSize().height));
 		messageBox.add(textBox, BorderLayout.SOUTH);
 		mainWin.add(messageBox);
 
@@ -78,11 +80,11 @@ public class GraphicalInterface {
 		
 
 		// User list
-		users.addElement("Bruhmoment");
-		users.addElement("SomeoneElse");
-		mainWin.add(new JScrollPane(usersList), BorderLayout.EAST);
-		textBox.setPreferredSize(new Dimension(textBox.getWidth(), newChannelButton.getPreferredSize().height));
+		users.addElement(config.username);
+		mainWin.add(usersListScrollPane, BorderLayout.EAST);
+		usersListScrollPane.setPreferredSize(new Dimension(newChannelButton.getPreferredSize().width, usersListScrollPane.getPreferredSize().height));
 		mainWin.setVisible(true);
+		
 
 		// Integration with Messenger
 		messenger.addMessageConsumer((msg) -> {
@@ -93,6 +95,17 @@ public class GraphicalInterface {
 					receivedChannelID = addChannel(msg.channel);
 				JTextPane receivedBuffer = channelBuffers.get(receivedChannelID);
 				receivedBuffer.setText(receivedBuffer.getText() + screenMSG + "\n");
+			});
+		});
+		messenger.addNewUserConsumer((newUser) -> {
+			SwingUtilities.invokeLater(() -> {
+				users.addElement(newUser.username);
+			});
+		}); 
+		messenger.addLeavingUserConsumer((leavingUser) -> {
+			SwingUtilities.invokeLater(() -> {
+				users.removeElement(leavingUser.username);
+//				usersListScrollPane.setSize(usersList.getPreferredScrollableViewportSize());
 			});
 		});
 	}
