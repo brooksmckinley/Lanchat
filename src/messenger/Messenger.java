@@ -3,9 +3,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import messenger.types.Message;
@@ -18,23 +18,23 @@ public class Messenger implements Runnable {
 	private final Settings config;
 	private MulticastSocket socket;
 	private volatile int mID = 0;
-	
+
 	private Consumer<Message> messageConsumer;
-	private Queue<Message> messagesToConsume; // For handling messages that are received before the UI initializes
+	private Queue<Message> messagesToConsume = new LinkedList<>(); // For handling messages that are received before the UI initializes
 	private Consumer<User> newUserConsumer;
-	private Queue<User> newUsersToConsume;
+	private Queue<User> newUsersToConsume = new LinkedList<>();
 	private Consumer<User> leavingUserConsumer;
-	private Queue<User> leavingUsersToConsume;
-	
-	HashMap<String, User> clients;
-	HashMap<String, Long> lastPing;
+	private Queue<User> leavingUsersToConsume = new LinkedList<>();
+
+	private ConcurrentHashMap<String, User> clients;
+	private ConcurrentHashMap<String, Long> lastPing;
 
 	public Messenger(Settings config) throws IOException {
 		this.config = config;
 		socket = new MulticastSocket(config.port);
 		socket.joinGroup(config.group);
-		clients = new HashMap<>();
-		messagesToConsume = new LinkedList<>();
+		clients = new ConcurrentHashMap<>();
+		lastPing = new ConcurrentHashMap<>();
 		new Thread(new Pinger(this)).start();
 	}
 
@@ -57,7 +57,7 @@ public class Messenger implements Runnable {
 		}
 		this.messagesToConsume = null; // Unset queue since it's not needed anymore
 	}
-	
+
 	public void addNewUserConsumer(Consumer<User> consumer) {
 		this.newUserConsumer = consumer;
 		for (User u : this.newUsersToConsume) {
@@ -65,7 +65,7 @@ public class Messenger implements Runnable {
 		}
 		this.newUsersToConsume = null;
 	}
-	
+
 	// Private handlers
 	private void onPacket(String packet) {
 		try {
@@ -85,7 +85,7 @@ public class Messenger implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void onMessage(Message message) {
 		if (this.messageConsumer != null)
 			messageConsumer.accept(message);
@@ -93,9 +93,11 @@ public class Messenger implements Runnable {
 			messagesToConsume.add(message);
 		setID(message.user, message.id);
 	}
-	
+
 	private void onPing(Ping ping) {
-		lastPing.put(ping.username, Calendar.getInstance().getTimeInMillis());
+		synchronized (this.lastPing) {
+			lastPing.put(ping.username, Calendar.getInstance().getTimeInMillis());
+		}
 		if (clients.containsKey(ping.username)) {
 			// Reliability stuff
 		}
@@ -104,15 +106,19 @@ public class Messenger implements Runnable {
 		}
 	}
 
-	
+
 	private void onNewUser(User user) {
+		System.out.println("New user " + user.username);
 		if (this.newUserConsumer != null)
 			newUserConsumer.accept(user);
 		else
 			newUsersToConsume.add(user);
 	}
-	
+
 	private void onLeavingUser(User user) {
+		System.out.println("Leaving user " + user.username);
+		clients.remove(user.username);
+		lastPing.remove(user.username);
 		if (this.leavingUserConsumer != null)
 			leavingUserConsumer.accept(user);
 		else
@@ -128,13 +134,21 @@ public class Messenger implements Runnable {
 			addUser(new User(user, id));
 		}
 	}
-	
+
 	private void addUser(User user) {
 		clients.put(user.username, user);
 		onNewUser(user);
 	}
 
 	protected void ping() {
+		// Check for leaving users
+		long currentTime = Calendar.getInstance().getTimeInMillis();
+		for (String user : this.lastPing.keySet()) {
+			long lastPingTime = lastPing.get(user);
+			if (currentTime - lastPingTime > 30000) {
+				this.onLeavingUser(clients.get(user));
+			}
+		}
 		byte[] toSend = String.format("ping|%d|%s|%s", mID, config.username, 
 				config.networkCard.getInetAddresses().nextElement().getHostAddress()).getBytes();
 		DatagramPacket packet = new DatagramPacket(toSend, toSend.length, config.group, config.port);
