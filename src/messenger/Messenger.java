@@ -186,9 +186,9 @@ public class Messenger implements Runnable {
 				this.onLeavingUser(clients.get(user));
 			}
 		}
-		byte[] toSend = String.format("ping|%d|%s|%s", mID, config.username, 
-				config.networkCard.getInetAddresses().nextElement().getHostAddress()).getBytes();
-		DatagramPacket packet = new DatagramPacket(toSend, toSend.length, config.group, config.port);
+		Ping toSend = new Ping(config.username, mID, config.networkCard.getInetAddresses().nextElement());
+		byte[] toSendBytes = toSend.getPacketBytes();
+		DatagramPacket packet = new DatagramPacket(toSendBytes, toSendBytes.length, config.group, config.port);
 		try {
 			socket.send(packet);
 		} catch (IOException e) {

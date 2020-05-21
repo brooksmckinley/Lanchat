@@ -21,4 +21,8 @@ public class Ping {
 		String returnAddrString = packet.substring(start);
 		return new Ping(user, lastMessageID, InetAddress.getByName(returnAddrString));
 	}
+	
+	public byte[] getPacketBytes() {
+		return String.format("ping|%d|%s|%s", lastMessageID, username, returnAddr.getHostAddress()).getBytes();
+	}
 }
