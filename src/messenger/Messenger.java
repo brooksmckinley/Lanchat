@@ -96,7 +96,6 @@ public class Messenger implements Runnable {
 			}
 			else if (packet.startsWith("retransmit|")) {
 				RetransmitRequest packetRequest = RetransmitRequest.parse(packet);
-				if (packetRequest.user.equals(config.username)) return; // Don't process retransmits from yourself
 				retransmit(packetRequest.requestedID);
 			}
 		} 
