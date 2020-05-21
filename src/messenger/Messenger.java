@@ -30,7 +30,7 @@ public class Messenger implements Runnable {
 	private Queue<User> leavingUsersToConsume = new LinkedList<>();
 
 	private ConcurrentHashMap<String, User> clients;
-	private ArrayList<Message> messagesSent;
+	private ArrayList<Message> messagesSent = new ArrayList<>();
 	private ConcurrentHashMap<String, Long> lastPing;
 
 	public Messenger(Settings config) throws IOException {
