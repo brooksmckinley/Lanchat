@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 import messenger.types.Message;
 import messenger.types.Ping;
+import messenger.types.RetransmitRequest;
 import messenger.types.Settings;
 import messenger.types.User;
 
@@ -44,12 +45,13 @@ public class Messenger implements Runnable {
 
 	// Public API
 	public void sendMessage(String channel, String message) {
-		byte[] toSend = String.format("msg|%d|%s|%s|%s", ++mID, config.username, channel, message).getBytes();
-		DatagramPacket packet = new DatagramPacket(toSend, toSend.length, config.group, config.port);
+		Message toSend = new Message(++mID, config.username, channel, message);
+		byte[] toSendBytes = toSend.getPacketBytes();
+		DatagramPacket packet = new DatagramPacket(toSendBytes, toSendBytes.length, config.group, config.port);
 
 		try {
 			socket.send(packet);
-			messagesSent.add(new Message(mID, config.username, channel, message));
+			messagesSent.add(toSend);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -95,7 +97,8 @@ public class Messenger implements Runnable {
 				onPing(packetPing);
 			}
 			else if (packet.startsWith("retransmit|")) {
-				
+				RetransmitRequest packetRequest = RetransmitRequest.parse(packet);
+				if (packetRequest.user.equals(config.username)) return; // Don't process retransmits from yourself
 			}
 		} 
 		catch (Exception e) {
@@ -131,7 +134,6 @@ public class Messenger implements Runnable {
 		}
 	}
 
-
 	private void onNewUser(User user) {
 		System.out.println("New user " + user.username);
 		if (this.newUserConsumer != null)
@@ -165,6 +167,16 @@ public class Messenger implements Runnable {
 		onNewUser(user);
 	}
 
+	private void retransmit(int id) {
+		try {
+			Message toRetransmit = messagesSent.get(id);
+			
+		}
+		catch (IndexOutOfBoundsException e) {
+			System.out.println("Cannot retransmit message we don't have");
+		}
+	}
+	
 	protected void ping() {
 		// Check for leaving users
 		long currentTime = Calendar.getInstance().getTimeInMillis();
