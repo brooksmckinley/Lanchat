@@ -1,9 +1,7 @@
 package messenger;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.MulticastSocket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -99,6 +97,7 @@ public class Messenger implements Runnable {
 			else if (packet.startsWith("retransmit|")) {
 				RetransmitRequest packetRequest = RetransmitRequest.parse(packet);
 				if (packetRequest.user.equals(config.username)) return; // Don't process retransmits from yourself
+				retransmit(packetRequest.requestedID);
 			}
 		} 
 		catch (Exception e) {
@@ -170,10 +169,15 @@ public class Messenger implements Runnable {
 	private void retransmit(int id) {
 		try {
 			Message toRetransmit = messagesSent.get(id);
-			
+			byte[] toRetransmitBytes = toRetransmit.getPacketBytes();
+			DatagramPacket retransmitPacket = new DatagramPacket(toRetransmitBytes, toRetransmitBytes.length, config.group, config.port);
+			socket.send(retransmitPacket);
 		}
 		catch (IndexOutOfBoundsException e) {
 			System.out.println("Cannot retransmit message we don't have");
+		} catch (IOException e) {
+			System.out.println("Cannot send retransmit: ");
+			e.printStackTrace();
 		}
 	}
 	
