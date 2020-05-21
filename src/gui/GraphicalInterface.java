@@ -21,6 +21,7 @@ public class GraphicalInterface {
 	private ArrayList<String> channelNames = new ArrayList<>();
 	private HashMap<String, Integer> channelIDs = new HashMap<>();
 	private ArrayList<JTextPane> channelBuffers = new ArrayList<>();
+	private ArrayList<Integer> notifications = new ArrayList<>();
 	private int currentChannelID;
 	
 	// Components
@@ -91,6 +92,10 @@ public class GraphicalInterface {
 					receivedChannelID = addChannel(msg.channel);
 				JTextPane receivedBuffer = channelBuffers.get(receivedChannelID);
 				receivedBuffer.setText(receivedBuffer.getText() + screenMSG + "\n");
+				if (currentChannelID != receivedChannelID) {
+				notifications.set(receivedChannelID, notifications.get(receivedChannelID) + 1);
+				channels.set(receivedChannelID, String.format("(%d) %s", notifications.get(receivedChannelID), msg.channel)); 
+				}
 			});
 		});
 		messenger.addNewUserConsumer((newUser) -> {
@@ -108,6 +113,7 @@ public class GraphicalInterface {
 	
 	private int addChannel(String channel) {
 		channelNames.add(channel);
+		notifications.add(0);
 		channels.addElement(channel);
 		JTextPane messages = new JTextPane();
 		messages.setEditable(false);
@@ -122,6 +128,8 @@ public class GraphicalInterface {
 		currentChannelID = channelIndex;
 		SwingUtilities.invokeLater(() -> {
 			messageScroller.setViewportView(currentChannelBuffer);
+			notifications.set(channelIndex, 0);
+			channels.set(channelIndex, channelNames.get(channelIndex));
 		});
 	}
 }
