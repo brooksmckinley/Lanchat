@@ -167,7 +167,7 @@ public class Messenger implements Runnable {
 
 	private void retransmit(int id) {
 		try {
-			Message toRetransmit = messagesSent.get(id);
+			Message toRetransmit = messagesSent.get(id - 1);
 			byte[] toRetransmitBytes = toRetransmit.getPacketBytes();
 			DatagramPacket retransmitPacket = new DatagramPacket(toRetransmitBytes, toRetransmitBytes.length, config.group, config.port);
 			socket.send(retransmitPacket);
