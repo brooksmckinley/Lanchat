@@ -1,7 +1,10 @@
 package messenger;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.MulticastSocket;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -27,6 +30,7 @@ public class Messenger implements Runnable {
 	private Queue<User> leavingUsersToConsume = new LinkedList<>();
 
 	private ConcurrentHashMap<String, User> clients;
+	private ArrayList<Message> messagesSent;
 	private ConcurrentHashMap<String, Long> lastPing;
 
 	public Messenger(Settings config) throws IOException {
@@ -45,6 +49,7 @@ public class Messenger implements Runnable {
 
 		try {
 			socket.send(packet);
+			messagesSent.add(new Message(mID, config.username, channel, message));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -80,12 +85,17 @@ public class Messenger implements Runnable {
 			if (packet.startsWith("msg|")) {
 				Message packetMessage = Message.parse(packet);
 				if (packetMessage.user.equals(config.username)) return; // Don't display messages from yourself
-				onMessage(packetMessage);
+				User from = clients.get(packetMessage.user);
+				if (from != null && packetMessage.id == from.lastID + 1) // Only process if they're in order, otherwise
+					onMessage(packetMessage);							 // handle in retransmit logic
 			}
 			else if (packet.startsWith("ping|")) {
 				Ping packetPing = Ping.parse(packet);
 				if (packetPing.username.equals(config.username)) return; // Don't process pings from yourself
 				onPing(packetPing);
+			}
+			else if (packet.startsWith("retransmit|")) {
+				
 			}
 		} 
 		catch (Exception e) {
@@ -103,11 +113,18 @@ public class Messenger implements Runnable {
 	}
 
 	private void onPing(Ping ping) {
-		synchronized (this.lastPing) {
-			lastPing.put(ping.username, Calendar.getInstance().getTimeInMillis());
-		}
+		lastPing.put(ping.username, Calendar.getInstance().getTimeInMillis());
 		if (clients.containsKey(ping.username)) {
-			// Reliability stuff
+			User pingUser = clients.get(ping.username);
+			if (ping.lastMessageID > pingUser.lastID) { // Request missing messages
+				byte[] requestBytes = String.format("retransmit|%s|%d", pingUser.username, pingUser.lastID + 1).getBytes();
+				DatagramPacket requestPacket = new DatagramPacket(requestBytes, requestBytes.length, config.group, config.port);
+				try {
+					socket.send(requestPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		else {
 			addUser(new User(ping.username, ping.lastMessageID));
