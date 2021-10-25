@@ -11,3 +11,7 @@ any use for it, try it out.
 * Multiple channels
 * Configurable multicast group and network interface
 * Reliable message delivery
+
+## Screenshots
+
+![](lanchat.png)
